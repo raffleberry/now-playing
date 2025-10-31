@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+  <Capabilities>
+    <<uap7:Capability Name="globalMediaControl"/>
+  </Capabilities>
+  <Identity Name="Now Playing" 
+            Version="0.1" 
+            Publisher="CN=raffleberry, O=raffleberry, L=Columbus, S=Ohio, C=USA" />
+  <Properties>
+    <DisplayName>Now Playing</DisplayName>
+    <PublisherDisplayName>raffleberry</PublisherDisplayName>
+    <Logo></Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.2.1</OSMinVersion>
+    <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Applications>
+    <Application Id="" StartPage="">
+      <VisualElements DisplayName="" Description=""
+           Logo="" SmallLogo=""  
+           ForegroundText="" BackgroundColor="">
+         <SplashScreen Image="" />
+      </VisualElements>
+    </Application>
+  </Applications>
+</Package>

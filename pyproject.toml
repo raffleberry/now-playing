@@ -1,0 +1,13 @@
+[project]
+name = "now-playing"
+version = "0.1.0"
+description = "Tested on Windows 10, send PR if you want Windows 11, Or wait till I windstrohop"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pyside6>=6.10.0",
+    "winrt-windows-foundation>=3.2.1",
+    "winrt-windows-foundation-collections>=3.2.1",
+    "winrt-windows-media>=3.2.1",
+    "winrt-windows-media-control>=3.2.1",
+]
