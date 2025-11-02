@@ -1,6 +1,7 @@
 from np import DEV
 import logging
 
+
 def _setupLogger(name, log_file = None, level=logging.ERROR):
     if DEV:
         level = logging.DEBUG

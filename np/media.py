@@ -1,7 +1,7 @@
-import asyncio
 from dataclasses import dataclass
-from typing import List, Sequence
-from np.utils import log
+from typing import List
+
+from PySide6.QtCore import QObject, Signal
 from winrt.windows.foundation import EventRegistrationToken
 from winrt.windows.media.control import (
     GlobalSystemMediaTransportControlsSession as MediaSession,
@@ -10,15 +10,14 @@ from winrt.windows.media.control import (
     GlobalSystemMediaTransportControlsSessionManager as MediaSessionManager,
 )
 from winrt.windows.media.control import (
-    GlobalSystemMediaTransportControlsSessionMediaProperties as MediaProperties
+    GlobalSystemMediaTransportControlsSessionMediaProperties as MediaProperties,
 )
 from winrt.windows.media.control import (
     MediaPropertiesChangedEventArgs,
     SessionsChangedEventArgs,
 )
 
-from PySide6.QtCore import QObject
-from PySide6.QtCore import Signal
+from np.utils import log
 
 
 @dataclass
@@ -43,21 +42,14 @@ class Media(QObject):
         self.eTokenForSession: dict[str, EventRegistrationToken] = {}
         self.mediaSessions: dict[str, MediaSession] = {}
     
-    async def registerLoop(self):
-        log.debug("Registering loop")
-        self.loop = asyncio.get_event_loop()
-        log.debug(self.loop)
-        log.debug("Registered loop")
-        
     async def start(self):
         log.debug("STARTING Media")
+
         self.sessionManager: MediaSessionManager = await MediaSessionManager.request_async()
         self.EtokenSessions: EventRegistrationToken = self.sessionManager.add_sessions_changed(self.sessionsChangeHandler)
         self.sessionsChangeHandler(self.sessionManager, None)
+        
         log.debug("STARTED Media")
-
-    def processSessionsx(self, sessions: Sequence[MediaSession]):
-        pass
     
     async def grabMediaProperties(self, appId: str):
         s = self.mediaSessions[appId]
@@ -83,22 +75,29 @@ class Media(QObject):
 
     def mediaPropsChangeHandler(self, s: MediaSession, args: MediaPropertiesChangedEventArgs | None):
         log.debug(":::::ON Media Properties Change:::::")
+
         self.onMediaPropsRefresh.emit(s.source_app_user_model_id)
         
     def sessionsChangeHandler(self, sm: MediaSessionManager, args: SessionsChangedEventArgs | None):
+        
         log.debug(":::::ON Sessions Change:::::")
+        
         sessions = sm.get_sessions()
         sessionsDict = dict((session.source_app_user_model_id, session) for session in sessions)
         currentSessions = [k for k, _ in self.eTokenForSession.items()]
         added, removed = [], []
         for k in currentSessions: 
             if k not in sessionsDict:
+        
                 log.debug(f"Session removed - {k}")
+        
                 self.releaseSession(self.mediaSessions[k])
                 removed.append(k)
         for k, v in sessionsDict.items():
             if k not in self.eTokenForSession.keys():
+        
                 log.debug(f"Session added - {k}")
+        
                 self.mediaSessions[k] = v
                 self.mediaPropsChangeHandler(v, None)
                 self.eTokenForSession[k] = v.add_media_properties_changed(self.mediaPropsChangeHandler)
