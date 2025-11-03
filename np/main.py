@@ -43,7 +43,7 @@ class AppTray(QSystemTrayIcon):
         self.setToolTip("Now Playing")
         self.setContextMenu(self.menu)
 
-        self.app.focusChanged.connect(self.handleFocusChange)
+        self.app.focusWindowChanged.connect(self.handleFocusChange)
 
         self.media = Media()
         self.media.onUpdateMediaSessions.connect(self.handleSessionsChange)
@@ -57,7 +57,6 @@ class AppTray(QSystemTrayIcon):
         if self.mainWindow is None:
             self.mainWindow = MainWindow(self.app, self, self.media)
         
-        print(reason, self.mainWindow.isVisible())        
         if self.mainWindow.isVisible():
             self.mainWindow.hide()
         else:
@@ -73,9 +72,8 @@ class AppTray(QSystemTrayIcon):
             toolTipText += f" - {active} apps"
         self.setToolTip(toolTipText)    
     
-    def handleFocusChange(self, old, new):
-        print(new)
-        if new is None and self.mainWindow is not None:
+    def handleFocusChange(self, win):
+        if win is None and self.mainWindow is not None:
             self.mainWindow.hide()
 
     async def startMedia(self):
