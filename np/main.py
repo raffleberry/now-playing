@@ -87,8 +87,8 @@ class MainWindow(QMainWindow):
         geom: QRect = screen.availableGeometry()
         win_w, win_h = self.width(), self.height()
 
-        x = geom.right() - win_w - 50
-        y = geom.bottom() - win_h - 50
+        x = geom.right() - win_w - 10
+        y = geom.bottom() - win_h - 10
         self.move(x, y)
 
         super().show()
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
     def __init__(self, app: QApplication, appTray: AppTray, media: Media):
         super().__init__()
         self.setUpdatesEnabled(False)
-        self.setFixedSize(QSize(320, 180))
+        self.setFixedSize(QSize(600, 260))
         self.setUpdatesEnabled(True)
 
         self.app = app
