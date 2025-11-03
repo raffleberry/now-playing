@@ -3,7 +3,7 @@ import sys
 from typing import List, override
 
 import PySide6.QtAsyncio as QtAsyncio
-from PySide6.QtCore import QRect, QSize, Signal
+from PySide6.QtCore import QRect, QSize, Signal, QModelIndex
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import (
     QApplication,
@@ -18,10 +18,11 @@ from PySide6.QtWidgets import (
 
 )
 from PySide6.QtWidgets import QVBoxLayout
-from np import core
-from np.media import Media, SessionsData
+from np import DEV, core
+from np.media import Media, PlaybackData, MediaData, SessionsData
 from np.utils import log
 
+from winrt.windows.system import Launcher
 
 class AppTray(QSystemTrayIcon):
     onQuit = Signal()
@@ -46,7 +47,7 @@ class AppTray(QSystemTrayIcon):
         self.app.focusWindowChanged.connect(self.handleFocusChange)
 
         self.media = Media()
-        self.media.onUpdateMediaSessions.connect(self.handleSessionsChange)
+        self.media.onPlaybackInfoRefresh.connect(self.handlePlaybackInfoChange)
         _ = asyncio.ensure_future(self.startMedia(), loop=core.loop)
     
     def handleClick(self, reason: QSystemTrayIcon.ActivationReason):
@@ -65,14 +66,17 @@ class AppTray(QSystemTrayIcon):
             self.mainWindow.raise_()
 
 
-    def handleSessionsChange(self, apps: SessionsData):
-        active = len(self.media.mediaSessions)
+    def handlePlaybackInfoChange(self, _: PlaybackData):
+        apps = len(self.media.mediaSessions)
+        playing = sum(1 for pi in self.media.playbackInfo.values() if pi.playback_status == "PLAYING")
         toolTipText = "Now Playing"
-        if active:
-            toolTipText += f" - {active} apps"
+        if apps:
+            toolTipText += f" - {playing}/{apps} apps"
         self.setToolTip(toolTipText)    
     
     def handleFocusChange(self, win):
+        if DEV:
+            return
         if win is None and self.mainWindow is not None:
             self.mainWindow.hide()
 
@@ -126,26 +130,39 @@ class MainWindow(QMainWindow):
 
         self.list_view = QListWidget()
         self.list_view_apps: List[str] = []
-        self.list_view_media_info: dict[int, str] = {}
+        self.list_view_media_data: dict[str, MediaData] = {}
+        self.list_view_playback_data: dict[str, PlaybackData] = {}
+
+        self.list_view.doubleClicked.connect(lambda x: asyncio.ensure_future(self.handleDoubleClick(x.row())))
         self.view.addWidget(self.list_view)
         
         self.appTray = appTray
         self.appTray.onQuit.connect(self.quit)
 
         self.media = media
+
+        self.media.onPlaybackInfoRefresh.connect(self.updatePlaybackInfo)
+        self.media.onUpdateMediaSessions.connect(self.updateApps)
+        self.media.onMediaPropsRefresh.connect(lambda appId: asyncio.ensure_future(self.updateMediaInfo(appId)))
         self._initialFuture = asyncio.ensure_future(self.getInitialData(), loop=core.loop)
 
-        self.media.onUpdateMediaSessions.connect(self.updateApps)
-        self.media.onMediaPropsRefresh.connect(
-            lambda appId: asyncio.ensure_future(self.updateMediaInfo(appId))
-        )
-
+    async def handleDoubleClick(self, idx):
+        print(idx)
 
 
     def getViewText(self, idx):
-        if idx not in self.list_view_media_info:
-            return self.list_view_apps[idx]
-        return f"{self.list_view_apps[idx]}: {self.list_view_media_info[idx]}"
+        app = self.list_view_apps[idx]
+        view_text = f"{app}"
+        if app in self.list_view_media_data:
+            pd = self.list_view_media_data[app]
+            title, artist = pd.title, pd.artist
+            view_text += f" : {title} - {artist}"
+        
+        if app in self.list_view_playback_data:
+            pd = self.list_view_playback_data[app]
+            view_text += f"\n {pd.playback_status}"
+        
+        return view_text
 
     def updateApps(self, apps: SessionsData):
         # remove from list view
@@ -164,21 +181,28 @@ class MainWindow(QMainWindow):
 
     async def getInitialData(self):
         added = [k for k in self.media.mediaSessions.keys()]
+        for pi in self.media.playbackInfo.values():
+            self.updatePlaybackInfo(pi)
         self.updateApps(SessionsData(added=added, removed=[]))
         await asyncio.gather(*[self.updateMediaInfo(k) for k in added])
         self.view.setCurrentIndex(1)
 
+    def updatePlaybackInfo(self, pi: PlaybackData):
+        self.list_view_playback_data[pi.app] = pi
+        for i in range(self.list_view.count()):
+            if self.list_view_apps[i] == pi.app:
+                self.list_view.item(i).setText(self.getViewText(i))
+                break
 
     async def updateMediaInfo(self, appId: str):
         props = await self.media.grabMediaProperties(appId)
         log.debug(f"Updating media info {props}")
         if not props:
             return
+
+        self.list_view_media_data[props.app] = props
         for i in range(self.list_view.count()):
             if self.list_view_apps[i] == props.app:
-                self.list_view_media_info[i] = (
-                    f"{props.title} - {props.artist} \n{props.status}\n{props.type}"
-                )
                 self.list_view.item(i).setText(self.getViewText(i))
                 break
 

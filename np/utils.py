@@ -1,7 +1,9 @@
 from np import DEV
 import logging
 
+from PySide6.QtCore import QSettings
 
+settings = QSettings()
 def _setupLogger(name, log_file = None, level=logging.ERROR):
     if DEV:
         level = logging.DEBUG
