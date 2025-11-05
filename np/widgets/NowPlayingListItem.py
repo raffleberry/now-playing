@@ -21,13 +21,13 @@ class NowPlayingListItem(QWidget):
     iconNext = QIcon.fromTheme(QIcon.ThemeIcon.MediaSkipForward)
     iconPrev = QIcon.fromTheme(QIcon.ThemeIcon.MediaSkipBackward)
 
-    def __init__(self, app_exe, artwork_path="", title="", artist=""):
+    def __init__(self, app_exe, artwork=b"", title="", artist=""):
         super().__init__()
-
 
         # ==== Artwork (Left Column) ====
         self.artwork_label = QLabel()
-        pixmap = QPixmap(artwork_path)
+        self.artwork_label.setScaledContents(True)
+        pixmap = self.qpixmap_from_bytes(artwork)
         if pixmap.isNull():
             pixmap = QPixmap(120, 120)
             pixmap.fill(Qt.GlobalColor.darkGray)
@@ -85,6 +85,10 @@ class NowPlayingListItem(QWidget):
         main_layout.addStretch()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+    def qpixmap_from_bytes(self, data: bytes) -> QPixmap:
+        pixmap = QPixmap()
+        pixmap.loadFromData(data)
+        return pixmap
 
 
 
@@ -95,7 +99,7 @@ class _MainWindow(QWidget):
         self.setWindowTitle("Music List Example")
 
         self.view = QVBoxLayout(self)
-        self.view.addWidget(NowPlayingListItem("app1.exe", "artwork.jpg", "Long Track Name Example That Should Ellipsize", "Artist One"))
+        self.view.addWidget(NowPlayingListItem("app1.exe", b"", "Long Track Name Example That Should Ellipsize", "Artist One"))
 
         self.setLayout(self.view)
         self.resize(640, 480)

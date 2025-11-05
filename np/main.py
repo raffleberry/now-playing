@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
 
     async def updateMediaInfo(self, appId: str):
         props = await self.media.grabMediaProperties(appId)
-        log.debug(f"Updating media info {props}")
+        log.debug(f"Updating media info {props.app if props is not None else None}")
         if not props:
             return
         self.list_view.updateMediaInfo(appId, props)

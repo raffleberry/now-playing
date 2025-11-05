@@ -1,18 +1,18 @@
-import enum
-from signal import Signals
-from typing import List
-from PySide6.QtWidgets import QListWidget
-from PySide6.QtWidgets import QListWidgetItem
-from PySide6.QtWidgets import QWidget
-from PySide6.QtWidgets import QVBoxLayout
-from np.media import MediaData, PlaybackData, SessionsData
-from np.widgets.NowPlayingListItem import NowPlayingListItem
-from PySide6.QtWidgets import QApplication
 import sys
-from PySide6.QtWidgets import QScrollArea
-from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QFrame
+from typing import List
+
 from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (
+    QApplication,
+    QFrame,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
+
+from np.media import MediaData, PlaybackData
+from np.widgets.NowPlayingListItem import NowPlayingListItem
+
 
 class NowPlayingList(QScrollArea):
     onPrev = Signal(str)
@@ -50,11 +50,13 @@ class NowPlayingList(QScrollArea):
 
         title = ""
         artist = ""
+        artwork = b""
         m = self.mediaInfo.get(appId, None)
         if m:
             title = m.title
             artist = m.artist
-        w = NowPlayingListItem(app_exe=appId, title=title, artist=artist)
+            artwork = m.thumbnail
+        w = NowPlayingListItem(app_exe=appId, artwork=artwork, title=title, artist=artist)
         w.next_button.clicked.connect(lambda: self.onNext.emit(appId))
         w.prev_button.clicked.connect(lambda: self.onPrev.emit(appId))
         w.play_button.clicked.connect(lambda: self.onPausePlay.emit(appId))
@@ -86,6 +88,7 @@ class NowPlayingList(QScrollArea):
                 item = self.viewWidgets[i]
                 item.title_label.setText(m.title)
                 item.artist_label.setText(m.artist)
+                item.artwork_label.setPixmap(item.qpixmap_from_bytes(m.thumbnail))
 
 if __name__ == "__main__":
     class _MainWindow(QWidget):
@@ -96,20 +99,20 @@ if __name__ == "__main__":
             self.list_widget.addApp("app1.exe")
             self.list_widget.updateMediaInfo(
                 "app1.exe",
-                MediaData(app="app1.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One")
+                MediaData(app="app1.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One", thumbnail=b"")
             )
 
             self.list_widget.addApp("app2.exe")
             self.list_widget.updateMediaInfo(
                 "app2.exe",
-                MediaData(app="app2.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One")
+                MediaData(app="app2.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One", thumbnail=b"")
             )
 
 
             self.list_widget.addApp("app3.exe")
             self.list_widget.updateMediaInfo(
                 "app3.exe",
-                MediaData(app="app3.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One")
+                MediaData(app="app3.exe", title="Long Track Name Example That Should Ellipsize", artist="Artist One", thumbnail=b"")
             )
             layout = QVBoxLayout(self)
             layout.addWidget(self.list_widget)

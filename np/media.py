@@ -18,6 +18,8 @@ from winrt.windows.media.control import (
     PlaybackInfoChangedEventArgs,
 )
 
+from winrt.windows.storage.streams import IRandomAccessStreamReference, DataReader
+
 from np.utils import log
 
 
@@ -26,6 +28,7 @@ class MediaData:
     app: str
     title: str
     artist: str
+    thumbnail: bytes
 
 @dataclass
 class SessionsData:
@@ -61,15 +64,34 @@ class Media(QObject):
         self.sessionsChangeHandler(self.sessionManager, None)
         
         log.debug("STARTED Media")
-    
+
+    async def read_stream_reference_to_bytes(self, stream_ref: IRandomAccessStreamReference) -> bytes:
+        stream = await stream_ref.open_read_async()
+
+        reader = DataReader(stream)
+        size = stream.size
+
+        await reader.load_async(size)
+
+        buffer = reader.read_buffer(size)
+        data = bytes(buffer)
+
+        reader.close()
+        stream.close()
+        return data
+
     async def grabMediaProperties(self, appId: str):
         s = self.mediaSessions[appId]
         props = await s.try_get_media_properties_async()
         if props:
+            thumbnail = b""
+            if props.thumbnail:
+                thumbnail = await self.read_stream_reference_to_bytes(props.thumbnail)
             m = MediaData(
                 app=s.source_app_user_model_id,
                 title=props.title,
                 artist=props.artist,
+                thumbnail=thumbnail,
             )
             return m
 
