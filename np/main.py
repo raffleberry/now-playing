@@ -21,8 +21,7 @@ from PySide6.QtWidgets import QVBoxLayout
 from np import DEV, core
 from np.media import Media, PlaybackData, MediaData, SessionsData
 from np.utils import log
-
-from winrt.windows.system import Launcher
+from np.widgets.NowPlayingList import NowPlayingList
 
 class AppTray(QSystemTrayIcon):
     onQuit = Signal()
@@ -128,12 +127,9 @@ class MainWindow(QMainWindow):
         self.loading = QLabel("Loading")
         self.view.addWidget(self.loading)
 
-        self.list_view = QListWidget()
-        self.list_view_apps: List[str] = []
-        self.list_view_media_data: dict[str, MediaData] = {}
-        self.list_view_playback_data: dict[str, PlaybackData] = {}
+        self.list_view = NowPlayingList()
 
-        self.list_view.doubleClicked.connect(lambda x: asyncio.ensure_future(self.handleDoubleClick(x.row())))
+        # self.list_view.doubleClicked.connect(lambda x: asyncio.ensure_future(self.handleDoubleClick(x.row())))
         self.view.addWidget(self.list_view)
         
         self.appTray = appTray
@@ -150,61 +146,33 @@ class MainWindow(QMainWindow):
         print(idx)
 
 
-    def getViewText(self, idx):
-        app = self.list_view_apps[idx]
-        view_text = f"{app}"
-        if app in self.list_view_media_data:
-            pd = self.list_view_media_data[app]
-            title, artist = pd.title, pd.artist
-            view_text += f" : {title} - {artist}"
-        
-        if app in self.list_view_playback_data:
-            pd = self.list_view_playback_data[app]
-            view_text += f"\n {pd.playback_status}"
-        
-        return view_text
-
     def updateApps(self, apps: SessionsData):
-        # remove from list view
-        removedIdxs = [self.list_view_apps.index(a) for a in apps.removed]
+        print("updateApps", apps)
         for a in apps.removed:
-            self.list_view_apps.remove(a)
-        for i in reversed(removedIdxs):
-            self.list_view.takeItem(i)
-
+            self.list_view.removeApp(a)
         for a in apps.added:
-            idx = len(self.list_view_apps)
-            self.list_view_apps.append(a)
-            w = QListWidgetItem(listview=self.list_view)
-            w.setText(self.getViewText(idx))
-            self.list_view.addItem(w)
+            self.list_view.addApp(a)
+        
+        if apps.removed:
+            self.repaint()
 
     async def getInitialData(self):
         added = [k for k in self.media.mediaSessions.keys()]
-        for pi in self.media.playbackInfo.values():
-            self.updatePlaybackInfo(pi)
         self.updateApps(SessionsData(added=added, removed=[]))
         await asyncio.gather(*[self.updateMediaInfo(k) for k in added])
+        for pi in self.media.playbackInfo.values():
+            self.updatePlaybackInfo(pi)
         self.view.setCurrentIndex(1)
 
     def updatePlaybackInfo(self, pi: PlaybackData):
-        self.list_view_playback_data[pi.app] = pi
-        for i in range(self.list_view.count()):
-            if self.list_view_apps[i] == pi.app:
-                self.list_view.item(i).setText(self.getViewText(i))
-                break
+        self.list_view.updatePlaybackInfo(pi.app, pi)
 
     async def updateMediaInfo(self, appId: str):
         props = await self.media.grabMediaProperties(appId)
         log.debug(f"Updating media info {props}")
         if not props:
             return
-
-        self.list_view_media_data[props.app] = props
-        for i in range(self.list_view.count()):
-            if self.list_view_apps[i] == props.app:
-                self.list_view.item(i).setText(self.getViewText(i))
-                break
+        self.list_view.updateMediaInfo(appId, props)
 
     def quit(self):
         if self.app:
