@@ -1,27 +1,26 @@
 import asyncio
 import sys
-from typing import List, override
+from typing import override
 
 import PySide6.QtAsyncio as QtAsyncio
-from PySide6.QtCore import QRect, QSize, Signal, QModelIndex
+from PySide6.QtCore import QRect, QSize, Signal
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import (
     QApplication,
     QLabel,
-    QListWidget,
-    QListWidgetItem,
     QMainWindow,
     QMenu,
-    QSystemTrayIcon,
     QStackedWidget,
-    QWidget
-
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtWidgets import QVBoxLayout
+
 from np import DEV, core
-from np.media import Media, PlaybackData, MediaData, SessionsData
+from np.media import Media, PlaybackData, SessionsData
 from np.utils import log
 from np.widgets.NowPlayingList import NowPlayingList
+
 
 class AppTray(QSystemTrayIcon):
     onQuit = Signal()
@@ -48,7 +47,7 @@ class AppTray(QSystemTrayIcon):
         self.media = Media()
         self.media.onPlaybackInfoRefresh.connect(self.handlePlaybackInfoChange)
         _ = asyncio.ensure_future(self.startMedia(), loop=core.loop)
-    
+
     def handleClick(self, reason: QSystemTrayIcon.ActivationReason):
         
         if reason == QSystemTrayIcon.ActivationReason.Context:
@@ -128,6 +127,9 @@ class MainWindow(QMainWindow):
         self.view.addWidget(self.loading)
 
         self.list_view = NowPlayingList()
+        self.list_view.onPrev.connect(lambda appId: asyncio.ensure_future(self.media.prev(appId)))
+        self.list_view.onPausePlay.connect(lambda appId: asyncio.ensure_future(self.media.pausePlay(appId)))
+        self.list_view.onNext.connect(lambda appId: asyncio.ensure_future(self.media.next(appId)))
 
         # self.list_view.doubleClicked.connect(lambda x: asyncio.ensure_future(self.handleDoubleClick(x.row())))
         self.view.addWidget(self.list_view)
@@ -147,14 +149,11 @@ class MainWindow(QMainWindow):
 
 
     def updateApps(self, apps: SessionsData):
-        print("updateApps", apps)
         for a in apps.removed:
             self.list_view.removeApp(a)
         for a in apps.added:
             self.list_view.addApp(a)
-        
-        if apps.removed:
-            self.repaint()
+       
 
     async def getInitialData(self):
         added = [k for k in self.media.mediaSessions.keys()]

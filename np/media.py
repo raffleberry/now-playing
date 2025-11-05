@@ -73,6 +73,17 @@ class Media(QObject):
             )
             return m
 
+    async def prev(self, appId: str):
+        s = self.mediaSessions[appId]
+        await s.try_skip_previous_async()
+
+    async def pausePlay(self, appId: str):
+        s = self.mediaSessions[appId]
+        await s.try_toggle_play_pause_async()
+
+    async def next(self, appId: str):
+        s = self.mediaSessions[appId]
+        await s.try_skip_next_async()
 
     def mediaPropsChangeHandler(self, s: MediaSession, args: MediaPropertiesChangedEventArgs | None):
         log.debug(":::::ON Media Properties Change:::::")

@@ -1,4 +1,5 @@
 import enum
+from signal import Signals
 from typing import List
 from PySide6.QtWidgets import QListWidget
 from PySide6.QtWidgets import QListWidgetItem
@@ -11,8 +12,13 @@ import sys
 from PySide6.QtWidgets import QScrollArea
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QFrame
+from PySide6.QtCore import Signal
 
 class NowPlayingList(QScrollArea):
+    onPrev = Signal(str)
+    onPausePlay = Signal(str)
+    onNext = Signal(str)
+
     def __init__(self):
         super().__init__()
         self.setWidgetResizable(True)
@@ -26,7 +32,6 @@ class NowPlayingList(QScrollArea):
         self.mediaInfo: dict[str, MediaData] = {}
 
     def removeApp(self, appId: str):
-        print(self.size(), self.viewLayout.sizeHint())
         idx = self.viewApps.index(appId)
         self.viewApps.pop(idx)
         w = self.viewWidgets.pop(idx)
@@ -50,6 +55,9 @@ class NowPlayingList(QScrollArea):
             title = m.title
             artist = m.artist
         w = NowPlayingListItem(app_exe=appId, title=title, artist=artist)
+        w.next_button.clicked.connect(lambda: self.onNext.emit(appId))
+        w.prev_button.clicked.connect(lambda: self.onPrev.emit(appId))
+        w.play_button.clicked.connect(lambda: self.onPausePlay.emit(appId))
 
         p = self.playbackInfo.get(appId, None)
         if p:
@@ -57,7 +65,7 @@ class NowPlayingList(QScrollArea):
             w.prev_button.setEnabled(p.is_previous_enabled)
             w.play_button.setEnabled(p.is_play_pause_toggle_enabled)
             w.play_button.setIcon(w.iconPlay if p.playback_status == "PAUSED" else w.iconPause)
-
+        
         self.viewLayout.addWidget(w)
         self.viewWidgets.append(w)
 
