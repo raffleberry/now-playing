@@ -21,5 +21,11 @@ package = true
 where = ["./"]
 include = ["np"]
 
+[dependency-groups]
+dev = [
+    "pillow>=12.0.0",
+    "pyinstaller>=6.16.0",
+]
+
 [project.scripts]
 np = "np.main:main"
