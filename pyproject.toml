@@ -29,3 +29,6 @@ dev = [
 
 [project.scripts]
 np = "np.main:main"
+
+[project.urls]
+repository = "https://github.com/raffleberry/now-playing"
