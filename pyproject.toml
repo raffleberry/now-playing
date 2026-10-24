@@ -19,7 +19,7 @@ package = true
 
 [tool.setuptools.packages.find]
 where = ["./"]
-include = ["np"]
+include = ["np", "np.*"]
 
 [dependency-groups]
 dev = [

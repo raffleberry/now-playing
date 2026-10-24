@@ -1,19 +1,27 @@
-import os
 import pathlib
+import subprocess
 
-src_dir = pathlib.Path(__file__).parent.parent
+import generate_resources
 
-def generate_icons():
-    global src_dir
-    resources_src = src_dir / "resources" / "icons.qrc"
-    resources_dst = src_dir / "np" / "icons.py"
-    os.system(f'pyside6-rcc "{resources_src}" -o "{resources_dst}"')
+src_dir = pathlib.Path(__file__).resolve().parent.parent
 
 
 def main():
-    global src_dir
-    os.system(f'pyinstaller --icon="{src_dir}/resources/icons/play.png" --name="NowPlaying" --noconsole "{src_dir / "np" / "main.py" }"')
+    generate_resources.main()
+
+    pyinstaller = generate_resources.find_tool("pyinstaller")
+    subprocess.run(
+        [
+            pyinstaller,
+            f"--icon={src_dir / 'resources' / 'icons' / 'play.png'}",
+            "--name=NowPlaying",
+            "--noconfirm",
+            "--noconsole",
+            str(src_dir / "np" / "main.py"),
+        ],
+        check=True,
+    )
+
 
 if __name__ == "__main__":
-    generate_icons()
     main()

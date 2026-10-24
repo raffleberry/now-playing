@@ -2,5 +2,14 @@
 <RCC version="1.0">
     <qresource prefix="icons">
         <file alias="play.png">icons/play.png</file>
+        <file alias="play.svg">icons/play.svg</file>
+        <file alias="pause.svg">icons/pause.svg</file>
+        <file alias="skip-back.svg">icons/skip-back.svg</file>
+        <file alias="skip-forward.svg">icons/skip-forward.svg</file>
+        <file alias="close.svg">icons/close.svg</file>
+        <file alias="note.svg">icons/note.svg</file>
+    </qresource>
+    <qresource prefix="styles">
+        <file alias="theme.qss">styles/theme.qss</file>
     </qresource>
 </RCC>

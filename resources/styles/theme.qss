@@ -1,0 +1,250 @@
+/* ==========================================================================
+   Now Playing - theme stylesheet
+   --------------------------------------------------------------------------
+   The color placeholders are replaced by np/theme.py with the active
+   light/dark palette. Add new colors to the DARK / LIGHT dicts there.
+   ========================================================================== */
+
+* {
+    font-family: "Segoe UI Variable Text", "Segoe UI", "Segoe UI Symbol";
+    outline: none;
+}
+
+QWidget {
+    color: @TEXT@;
+    font-size: 12px;
+    selection-background-color: @ACCENT@;
+    selection-color: @ACCENT_TEXT@;
+}
+
+/* ---- window / panel ----------------------------------------------------- */
+
+QFrame#card {
+    background-color: @WINDOW@;
+    border: 1px solid @PANEL_BORDER@;
+    border-radius: 18px;
+}
+
+QLabel#appTitleLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: @TEXT@;
+}
+
+QLabel#countLabel {
+    font-size: 10px;
+    color: @MUTED@;
+}
+
+QToolButton#closeButton {
+    background: transparent;
+    border: none;
+    border-radius: 14px;
+    padding: 0;
+}
+QToolButton#closeButton:hover {
+    background-color: @BTN_HOVER@;
+}
+QToolButton#closeButton:pressed {
+    background-color: @BTN_PRESSED@;
+}
+
+QFrame#divider {
+    background-color: @DIVIDER@;
+    border: none;
+}
+
+/* ---- stacked pages ------------------------------------------------------ */
+
+QStackedWidget#stack {
+    background: transparent;
+    border: none;
+}
+
+QLabel#loadingTitle,
+QLabel#emptyTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: @TEXT@;
+}
+
+QLabel#loadingHint,
+QLabel#emptyHint {
+    font-size: 11px;
+    color: @MUTED@;
+}
+
+/* ---- session list ------------------------------------------------------- */
+
+QScrollArea#NowPlayingList {
+    background: transparent;
+    border: none;
+}
+
+QScrollArea#NowPlayingList > QWidget > QWidget,
+QWidget#scrollAreaWidgetContents {
+    background: transparent;
+    border: none;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 2px 0 2px 2px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: @SCROLL@;
+    border-radius: 3px;
+    min-height: 28px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: @SCROLL_HOVER@;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+    width: 0;
+    background: transparent;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+/* ---- session card ------------------------------------------------------- */
+
+QFrame#sessionCard {
+    background-color: @CARD@;
+    border: 1px solid @CARD_BORDER@;
+    border-radius: 14px;
+}
+
+QFrame#sessionCard:hover {
+    background-color: @CARD_HOVER@;
+    border-color: @CARD_BORDER_HOVER@;
+}
+
+QFrame#sessionCard[playing="true"] {
+    background-color: @CARD_PLAYING@;
+    border: 1px solid @CARD_PLAYING_BORDER@;
+}
+
+QFrame#sessionCard[playing="true"]:hover {
+    background-color: @CARD_PLAYING_HOVER@;
+}
+
+QLabel#artwork {
+    border-radius: 10px;
+    background: transparent;
+}
+
+QLabel#appLabel {
+    background-color: @PILL_BG@;
+    color: @PILL_TEXT@;
+    border-radius: 7px;
+    padding: 2px 7px;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+QLabel#titleLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: @TEXT@;
+}
+
+QLabel#artistLabel {
+    font-size: 12px;
+    color: @MUTED@;
+}
+
+QLabel#timeLabel {
+    font-size: 10px;
+    color: @FAINT@;
+}
+
+QProgressBar#progressBar {
+    background-color: @TRACK@;
+    border: none;
+    border-radius: 2px;
+    min-height: 4px;
+    max-height: 4px;
+}
+
+QProgressBar#progressBar::chunk {
+    background-color: @ACCENT@;
+    border-radius: 2px;
+}
+
+QPushButton#prevButton,
+QPushButton#nextButton {
+    background: transparent;
+    border: none;
+    border-radius: 15px;
+    padding: 0;
+}
+QPushButton#prevButton:hover,
+QPushButton#nextButton:hover {
+    background-color: @BTN_HOVER@;
+}
+QPushButton#prevButton:pressed,
+QPushButton#nextButton:pressed {
+    background-color: @BTN_PRESSED@;
+}
+
+QPushButton#playButton {
+    background-color: @ACCENT@;
+    border: none;
+    border-radius: 19px;
+    padding: 0;
+}
+QPushButton#playButton:hover {
+    background-color: @ACCENT_HOVER@;
+}
+QPushButton#playButton:pressed {
+    background-color: @ACCENT_PRESSED@;
+}
+QPushButton#playButton:disabled {
+    background-color: @PLAY_DISABLED@;
+}
+
+/* ---- menus / tooltips --------------------------------------------------- */
+
+QMenu {
+    background-color: @MENU_BG@;
+    border: 1px solid @MENU_BORDER@;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 6px 22px 6px 14px;
+    border-radius: 6px;
+    color: @TEXT@;
+}
+
+QMenu::item:selected {
+    background-color: @MENU_SELECTED@;
+}
+
+QMenu::item:disabled {
+    color: @FAINT@;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: @DIVIDER@;
+    margin: 4px 8px;
+}
+
+QToolTip {
+    background-color: @MENU_BG@;
+    color: @TEXT@;
+    border: 1px solid @MENU_BORDER@;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
